@@ -1,0 +1,149 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section script {
+    <script>
+
+        var store = new DevExpress.data.CustomStore({
+            key: ["user_task_id"],
+            errorHandler: function (error) { console.log(error) },
+            load: function (loadOptions) {
+                var d = $.Deferred();
+                Frkn.TableOP({ type: 'S', tableName: 'user_task', keys: { deleted:0  } }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve(ret.data, { totalCount: ret.data.lenght });
+                });
+                return d.promise();
+            },
+            insert: function (values) {
+                var d = $.Deferred();
+                values.created_user_id = 0;
+
+                Frkn.TableOP({ type: 'I', tableName: 'user_task', values: values }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve();
+                });
+                return d.promise();
+            },
+            update: function (key, values) {
+                var d = $.Deferred();
+                //values.updated_user_id = 1;
+                //values.updated_date = new Date();
+
+                Frkn.TableOP({ type: 'U', tableName: 'user_task', values: values, keys: key }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve();
+                });
+                return d.promise();
+            }, remove: function (key) {
+                var d = $.Deferred();
+                var values={};
+                //values.updated_user_id = 1;
+                //values.updated_date = new Date();
+                values.deleted = 1;
+
+                Frkn.TableOP({ type: 'U', tableName: 'user_task', keys: key, values: values }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve();
+                });
+                return d.promise();
+            }
+        });
+
+        var storeUser = new DevExpress.data.CustomStore({
+            key: ["user_id"],
+            errorHandler: function (error) { console.log(error) },
+            load: function (loadOptions) {
+                var d = $.Deferred();
+                Frkn.TableOP({ type: 'S', tableName: 'user', keys: { deleted:0 } }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve(ret.data, { totalCount: ret.data.lenght });
+                });
+                return d.promise();
+            },
+            byKey: function (key) {
+                var d = $.Deferred();
+                Frkn.TableOP({ type: 'S', tableName: 'user', keys: {  user_id: key } }, function (ret) {
+                    if (ret.status != 1) { DevExpress.ui.notify(ret.errors[0], "error", 5000); }
+                    d.resolve(ret.data, { totalCount: ret.data.lenght });
+                });
+                return d.promise();
+            },
+        });
+
+   
+        $('#dg_task').dxDataGrid({
+            columnsAutoWidth: true,
+            showBorders: true,
+            showRowLines: true,
+            rowAlternationEnable: true,
+            dataSource: store,
+            paging: {
+                pageSize: 50,
+            },
+            loadPanel: {
+                enabled: true
+            },
+            scrolling: {
+                mode: "virtual"
+            },
+            editing: {
+                mode: "popup",
+                allowUpdating: true,
+                allowDeleting: true,
+                allowAdding: true,
+                useIcons: true,
+            },
+            filterRow: {
+                visible: true,
+                applyFilter: "auto"
+            },
+            columns: [
+                {
+                    dataField: "user_id",
+                    caption: "User",
+                    lookup: {
+                        searchEnabled: true,
+                        dataSource: {
+                            store: storeUser,
+                            paginate: false
+                        },
+                        valueExpr: 'user_id',
+                        displayExpr: 'username'
+                    }
+                },
+                {
+                    dataField: "subject",
+                    validationRules: [{ type: "required" }],
+                },
+                {
+                    dataField: "description",
+                    validationRules: [{ type: "required" }],
+                },
+                 {
+                    dataField: "start_date",
+                    validationRules: [{ type: "required" }],
+                    dataType: "datetime"
+                },
+                 {
+                    dataField: "end_date",
+                    validationRules: [{ type: "required" }],
+                    dataType: "datetime"
+                }
+            ],
+        });
+    </script>
+
+
+}
+
+<div class="text-center">
+   
+
+    <div id="dg_task">
+
+    </div>
+
+
+</div>
