@@ -101,16 +101,7 @@ namespace UserTaskChallenge.Controllers
                         }
                         else if (type == "U")
                         {
-                            if (tableName == "User" && values.Any(x => x.key == "deleted" && x.value == 1))
-                            {
-                                DataTable dt = sqlConn.Get("SELECT userID FROM [User] WHERE deleted = 0 AND parentUserID = @parentUserID", CommandType.Text, new SqlParameter("parentUserID", keys.First().value));
-                                if (dt.Rows.Count > 0)
-                                {
-                                    ret.status = ReturnData.Status.Error;
-                                    ret.errors.Add("This user have a student, can't delete.");
-                                    return Ok(ret);
-                                }
-                            }
+                            
 
                             if (values.Count <= 0)
                             {
@@ -124,16 +115,7 @@ namespace UserTaskChallenge.Controllers
                             }
                             else
                             {
-                                if (values.Any(x => x.key == "deleted") && values.First(x => x.key == "deleted").value == 1)
-                                {
-                                    try
-                                    {
-                                        ret = DeleteControl(tableName, Convert.ToInt32(keys.First().value));
-                                        if (ret.status != ReturnData.Status.Ok)
-                                            return Ok(ret);
-                                    }
-                                    catch { }
-                                }
+                                
 
                                 queryString = string.Format("UPDATE [{0}] SET {1} WHERE {2}",
                                     tableName,
@@ -256,26 +238,7 @@ namespace UserTaskChallenge.Controllers
             }
         }
 
-        public ReturnData DeleteControl(string tableName, int id)
-        {
-            ReturnData ret = new ReturnData();
-            ret.status = ReturnData.Status.Ok;
-
-            Core.SQL.Conn sqlConn = new Core.SQL.Conn(StaticData.connStr);
-            if (tableName == "Author")
-            {
-                DataTable dt = sqlConn.Get("SELECT COUNT(*) FROM [Book] WHERE deleted = 0 AND authorID = @authorID", CommandType.Text, new SqlParameter("authorID", id));
-                int cnt = Convert.ToInt32(dt.Rows[0][0]);
-
-                if (cnt > 0)
-                {
-                    ret.status = ReturnData.Status.Error;
-                    ret.errors.Add("There is a book by this author, this author cannot be deleted.");
-                }
-            }
-
-            return ret;
-        }
+        
 
     }
 
